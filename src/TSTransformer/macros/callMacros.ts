@@ -1,10 +1,12 @@
 import luau from "@roblox-ts/luau-ast";
 import { errors } from "Shared/diagnostics";
 import { DiagnosticService } from "TSTransformer/classes/DiagnosticService";
+import { TransformState } from "TSTransformer/classes/TransformState";
 import { CallMacro, MacroList } from "TSTransformer/macros/types";
 import { convertToIndexableExpression } from "TSTransformer/util/convertToIndexableExpression";
 import { getImportParts } from "TSTransformer/util/createImportExpression";
 import { createTruthinessChecks } from "TSTransformer/util/createTruthinessChecks";
+import ts from "typescript";
 
 const PRIMITIVE_LUAU_TYPES = new Set([
 	"nil",
@@ -58,4 +60,11 @@ export const CALL_MACROS: MacroList<CallMacro> = {
 		// converts the flat array into { root, { "rest", "of", "path" } }
 		return luau.array([parts.shift()!, luau.array(parts)]);
 	},
+
+	$compileTime: (state, node) => luau.number(Date.now() / 1000),
+
+	asObject: (state, node, expression, args) => args[0],
+	asMap: (state, node, expression, args) => args[0],
+	asSet: (state, node, expression, args) => args[0],
+	asArray: (state, node, expression, args) => args[0],
 };
