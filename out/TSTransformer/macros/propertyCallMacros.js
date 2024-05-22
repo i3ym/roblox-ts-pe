@@ -5,7 +5,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PROPERTY_CALL_MACROS = void 0;
 const luau_ast_1 = __importDefault(require("@roblox-ts/luau-ast"));
+const diagnostics_1 = require("../../Shared/diagnostics");
 const assert_1 = require("../../Shared/util/assert");
+const DiagnosticService_1 = require("../classes/DiagnosticService");
 const convertToIndexableExpression_1 = require("../util/convertToIndexableExpression");
 const isUsedAsStatement_1 = require("../util/isUsedAsStatement");
 const offset_1 = require("../util/offset");
@@ -107,6 +109,23 @@ function argumentsWithDefaults(state, args, defaults) {
     }
     return args;
 }
+const FUNCTION_METHODS = {
+    asArrow: (state, node, expression) => expression,
+    bind: (state, node, expression, args) => {
+        if (expression.kind !== luau_ast_1.default.SyntaxKind.TemporaryIdentifier &&
+            expression.kind !== luau_ast_1.default.SyntaxKind.PropertyAccessExpression) {
+            DiagnosticService_1.DiagnosticService.addDiagnostic(diagnostics_1.errors.useMethodOnly(node));
+            return luau_ast_1.default.none();
+        }
+        return luau_ast_1.default.create(luau_ast_1.default.SyntaxKind.FunctionExpression, {
+            parameters: luau_ast_1.default.list.make(),
+            statements: luau_ast_1.default.list.make(luau_ast_1.default.create(luau_ast_1.default.SyntaxKind.CallStatement, {
+                expression: luau_ast_1.default.call(expression, [...args, luau_ast_1.default.create(luau_ast_1.default.SyntaxKind.VarArgsLiteral, {})]),
+            })),
+            hasDotDotDot: true,
+        });
+    },
+};
 const ARRAY_LIKE_METHODS = {
     size: (state, node, expression) => luau_ast_1.default.unary("#", expression),
 };
@@ -661,6 +680,7 @@ exports.PROPERTY_CALL_MACROS = {
     Vector3: makeMathSet("+", "-", "*", "/", "//"),
     Vector3int16: makeMathSet("+", "-", "*", "/"),
     Number: makeMathSet("//"),
+    Function: FUNCTION_METHODS,
     String: STRING_CALLBACKS,
     ArrayLike: ARRAY_LIKE_METHODS,
     ReadonlyArray: READONLY_ARRAY_METHODS,

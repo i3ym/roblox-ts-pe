@@ -48,6 +48,7 @@ export declare const errors: {
     noIterableIteration: DiagnosticFactory<[]>;
     noMixedTypeCall: DiagnosticFactory<[]>;
     noIndexWithoutCall: DiagnosticFactory<[]>;
+    useMethodOnly: DiagnosticFactory<[]>;
     noCommentDirectives: DiagnosticFactory<[]>;
     noOptionalMacroCall: DiagnosticFactory<[]>;
     noConstructorMacroWithoutNew: DiagnosticFactory<[]>;

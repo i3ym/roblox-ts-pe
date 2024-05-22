@@ -13,8 +13,22 @@ const types_1 = require("./types");
 const typescript_1 = __importDefault(require("typescript"));
 function addIndexDiagnostics(state, node, expType) {
     const symbol = (0, types_1.getFirstDefinedSymbol)(state, expType);
+    const up = (0, traversal_1.skipUpwards)(node);
     if ((symbol && state.services.macroManager.getPropertyCallMacro(symbol)) ||
-        (!(0, isValidMethodIndexWithoutCall_1.isValidMethodIndexWithoutCall)(state, (0, traversal_1.skipUpwards)(node)) && (0, isMethod_1.isMethod)(state, node))) {
+        (!(0, isValidMethodIndexWithoutCall_1.isValidMethodIndexWithoutCall)(state, up) && (0, isMethod_1.isMethod)(state, node))) {
+        let parent = up;
+        while (true) {
+            if (!parent)
+                break;
+            if (!typescript_1.default.isExpression(parent))
+                break;
+            if (typescript_1.default.isCallExpression(parent) &&
+                typescript_1.default.isPropertyAccessExpression(parent.expression) &&
+                typescript_1.default.isIdentifier(parent.expression.name)) {
+                return;
+            }
+            parent = parent.parent;
+        }
         DiagnosticService_1.DiagnosticService.addDiagnostic(diagnostics_1.errors.noIndexWithoutCall(node));
     }
     if (typescript_1.default.isPrototypeAccess(node)) {

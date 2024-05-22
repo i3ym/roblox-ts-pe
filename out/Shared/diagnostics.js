@@ -92,6 +92,7 @@ exports.errors = {
     noIterableIteration: error("Iterating on Iterable<T> is not supported! You must use a more specific type."),
     noMixedTypeCall: error("Attempted to call a function with mixed types! All definitions must either be a method or a callback."),
     noIndexWithoutCall: error("Cannot index a method without calling it!", suggestion("Use the form `() => a.b()` instead of `a.b`.")),
+    useMethodOnly: error("Use a method!"),
     noCommentDirectives: error("Usage of `@ts-ignore`, `@ts-expect-error`, and `@ts-nocheck` are not supported!", "roblox-ts needs type and symbol info to compile correctly.", suggestion("Consider using type assertions or `declare` statements.")),
     noOptionalMacroCall: error("Macro methods can not be optionally called!", suggestion("Macros always exist. Use a normal call.")),
     noConstructorMacroWithoutNew: error("Cannot index a constructor macro without using the `new` operator!"),
