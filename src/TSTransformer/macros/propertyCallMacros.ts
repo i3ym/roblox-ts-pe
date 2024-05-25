@@ -172,7 +172,7 @@ const FUNCTION_METHODS: MacroList<PropertyCallMacro> = {
 		return luau.create(luau.SyntaxKind.FunctionExpression, {
 			parameters: luau.list.make(),
 			statements: luau.list.make(
-				luau.create(luau.SyntaxKind.CallStatement, {
+				luau.create(luau.SyntaxKind.ReturnStatement, {
 					expression: luau.call(expression, [...args, luau.create(luau.SyntaxKind.VarArgsLiteral, {})]),
 				}),
 			),

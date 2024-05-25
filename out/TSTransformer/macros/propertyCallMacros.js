@@ -119,7 +119,7 @@ const FUNCTION_METHODS = {
         }
         return luau_ast_1.default.create(luau_ast_1.default.SyntaxKind.FunctionExpression, {
             parameters: luau_ast_1.default.list.make(),
-            statements: luau_ast_1.default.list.make(luau_ast_1.default.create(luau_ast_1.default.SyntaxKind.CallStatement, {
+            statements: luau_ast_1.default.list.make(luau_ast_1.default.create(luau_ast_1.default.SyntaxKind.ReturnStatement, {
                 expression: luau_ast_1.default.call(expression, [...args, luau_ast_1.default.create(luau_ast_1.default.SyntaxKind.VarArgsLiteral, {})]),
             })),
             hasDotDotDot: true,
