@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.transformClassLikeDeclaration = void 0;
 const luau_ast_1 = __importDefault(require("@roblox-ts/luau-ast"));
+const path_1 = __importDefault(require("path"));
 const diagnostics_1 = require("../../../Shared/diagnostics");
 const assert_1 = require("../../../Shared/util/assert");
 const DiagnosticService_1 = require("../../classes/DiagnosticService");
@@ -50,6 +51,21 @@ function createBoilerplate(state, node, className, isClassExpression) {
             index: luau_ast_1.default.strings.__tostring,
             value: createNameFunction(luau_ast_1.default.isTemporaryIdentifier(className) ? "Anonymous" : className.name),
         }));
+        const identifierByType = (type) => {
+            var _a;
+            if (!((_a = type === null || type === void 0 ? void 0 : type.symbol) === null || _a === void 0 ? void 0 : _a.valueDeclaration))
+                return;
+            const pth = path_1.default.relative("src", type.symbol.valueDeclaration.getSourceFile().fileName);
+            return pth + "$" + type.symbol.name;
+        };
+        const smb = node.symbol && state.typeChecker.getTypeOfSymbolAtLocation(node.symbol, node);
+        const idf = smb && identifierByType(smb);
+        if (idf) {
+            luau_ast_1.default.list.push(metatableFields, luau_ast_1.default.create(luau_ast_1.default.SyntaxKind.MapField, {
+                index: luau_ast_1.default.string("__csymbol"),
+                value: luau_ast_1.default.string(idf),
+            }));
+        }
         if (extendsNode) {
             const [extendsExp, extendsExpPrereqs] = state.capture(() => (0, transformExpression_1.transformExpression)(state, extendsNode.expression));
             const superId = luau_ast_1.default.id("super");
