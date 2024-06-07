@@ -23,6 +23,9 @@ function makeMathMethod(operator) {
         return luau_ast_1.default.binary(expression, operator, rhs);
     };
 }
+function makeUnaryMathMethod(operator) {
+    return (state, node, expression) => luau_ast_1.default.unary(operator, expression);
+}
 const OPERATOR_TO_NAME_MAP = new Map([
     ["+", "add"],
     ["-", "sub"],
@@ -30,12 +33,22 @@ const OPERATOR_TO_NAME_MAP = new Map([
     ["/", "div"],
     ["//", "idiv"],
 ]);
+const UNARY_OPERATOR_TO_NAME_MAP = new Map([["-", "unm"]]);
 function makeMathSet(...operators) {
     const result = {};
     for (const operator of operators) {
         const methodName = OPERATOR_TO_NAME_MAP.get(operator);
         (0, assert_1.assert)(methodName);
         result[methodName] = makeMathMethod(operator);
+    }
+    return result;
+}
+function makeUnarySet(...operators) {
+    const result = {};
+    for (const operator of operators) {
+        const methodName = UNARY_OPERATOR_TO_NAME_MAP.get(operator);
+        (0, assert_1.assert)(methodName);
+        result[methodName] = makeUnaryMathMethod(operator);
     }
     return result;
 }
@@ -675,10 +688,10 @@ exports.PROPERTY_CALL_MACROS = {
     CFrame: makeMathSet("+", "-", "*"),
     UDim: makeMathSet("+", "-"),
     UDim2: makeMathSet("+", "-"),
-    Vector2: makeMathSet("+", "-", "*", "/", "//"),
-    Vector2int16: makeMathSet("+", "-", "*", "/"),
-    Vector3: makeMathSet("+", "-", "*", "/", "//"),
-    Vector3int16: makeMathSet("+", "-", "*", "/"),
+    Vector2: { ...makeMathSet("+", "-", "*", "/", "//"), ...makeUnarySet("-") },
+    Vector2int16: { ...makeMathSet("+", "-", "*", "/"), ...makeUnarySet("-") },
+    Vector3: { ...makeMathSet("+", "-", "*", "/", "//"), ...makeUnarySet("-") },
+    Vector3int16: { ...makeMathSet("+", "-", "*", "/"), ...makeUnarySet("-") },
     Number: makeMathSet("//"),
     Function: FUNCTION_METHODS,
     String: STRING_CALLBACKS,

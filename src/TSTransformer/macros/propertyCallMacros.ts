@@ -20,6 +20,9 @@ function makeMathMethod(operator: luau.BinaryOperator): PropertyCallMacro {
 		return luau.binary(expression, operator, rhs);
 	};
 }
+function makeUnaryMathMethod(operator: luau.UnaryOperator): PropertyCallMacro {
+	return (state, node, expression) => luau.unary(operator, expression);
+}
 
 const OPERATOR_TO_NAME_MAP = new Map<luau.BinaryOperator, "add" | "sub" | "mul" | "div" | "idiv">([
 	["+", "add"],
@@ -28,6 +31,7 @@ const OPERATOR_TO_NAME_MAP = new Map<luau.BinaryOperator, "add" | "sub" | "mul" 
 	["/", "div"],
 	["//", "idiv"],
 ]);
+const UNARY_OPERATOR_TO_NAME_MAP = new Map<luau.UnaryOperator, "unm">([["-", "unm"]]);
 
 function makeMathSet(...operators: Array<luau.BinaryOperator>) {
 	const result: { [index: string]: PropertyCallMacro } = {};
@@ -35,6 +39,15 @@ function makeMathSet(...operators: Array<luau.BinaryOperator>) {
 		const methodName = OPERATOR_TO_NAME_MAP.get(operator);
 		assert(methodName);
 		result[methodName] = makeMathMethod(operator);
+	}
+	return result;
+}
+function makeUnarySet(...operators: Array<luau.UnaryOperator>) {
+	const result: { [index: string]: PropertyCallMacro } = {};
+	for (const operator of operators) {
+		const methodName = UNARY_OPERATOR_TO_NAME_MAP.get(operator);
+		assert(methodName);
+		result[methodName] = makeUnaryMathMethod(operator);
 	}
 	return result;
 }
@@ -946,10 +959,10 @@ export const PROPERTY_CALL_MACROS: { [className: string]: MacroList<PropertyCall
 	CFrame: makeMathSet("+", "-", "*"),
 	UDim: makeMathSet("+", "-"),
 	UDim2: makeMathSet("+", "-"),
-	Vector2: makeMathSet("+", "-", "*", "/", "//"),
-	Vector2int16: makeMathSet("+", "-", "*", "/"),
-	Vector3: makeMathSet("+", "-", "*", "/", "//"),
-	Vector3int16: makeMathSet("+", "-", "*", "/"),
+	Vector2: { ...makeMathSet("+", "-", "*", "/", "//"), ...makeUnarySet("-") },
+	Vector2int16: { ...makeMathSet("+", "-", "*", "/"), ...makeUnarySet("-") },
+	Vector3: { ...makeMathSet("+", "-", "*", "/", "//"), ...makeUnarySet("-") },
+	Vector3int16: { ...makeMathSet("+", "-", "*", "/"), ...makeUnarySet("-") },
 	Number: makeMathSet("//"),
 
 	Function: FUNCTION_METHODS,
