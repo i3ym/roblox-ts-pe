@@ -19,6 +19,7 @@ const getParsedCommandLine_1 = require("./getParsedCommandLine");
 const tryRemoveOutput_1 = require("./tryRemoveOutput");
 const isCompilableFile_1 = require("../util/isCompilableFile");
 const walkDirectorySync_1 = require("../util/walkDirectorySync");
+const constants_1 = require("../../Shared/constants");
 const DiagnosticError_1 = require("../../Shared/errors/DiagnosticError");
 const assert_1 = require("../../Shared/util/assert");
 const getRootDirs_1 = require("../../Shared/util/getRootDirs");
@@ -108,11 +109,13 @@ function setupProjectWatchProgram(data, usePolling) {
                 filesToCompile.add(fsPath);
             }
             else {
-                const transformerWatcher = data.transformerWatcher;
-                if (transformerWatcher) {
-                    const contents = typescript_1.default.sys.readFile(fsPath);
-                    if (contents) {
-                        transformerWatcher.updateFile(fsPath, contents);
+                if (fsPath.endsWith(constants_1.DTS_EXT)) {
+                    const transformerWatcher = data.transformerWatcher;
+                    if (transformerWatcher) {
+                        const contents = typescript_1.default.sys.readFile(fsPath);
+                        if (contents) {
+                            transformerWatcher.updateFile(fsPath, contents);
+                        }
                     }
                 }
                 filesToCopy.add(fsPath);

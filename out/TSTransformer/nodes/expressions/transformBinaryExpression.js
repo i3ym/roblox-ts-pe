@@ -21,7 +21,6 @@ const createBinaryFromOperator_1 = require("../../util/createBinaryFromOperator"
 const ensureTransformOrder_1 = require("../../util/ensureTransformOrder");
 const getAssignableValue_1 = require("../../util/getAssignableValue");
 const getKindName_1 = require("../../util/getKindName");
-const isSymbolFromRobloxTypes_1 = require("../../util/isSymbolFromRobloxTypes");
 const isUsedAsStatement_1 = require("../../util/isUsedAsStatement");
 const traversal_1 = require("../../util/traversal");
 const types_1 = require("../../util/types");
@@ -169,8 +168,7 @@ function transformBinaryExpression(state, node) {
         }), "~=", luau_ast_1.default.nil());
     }
     else if (operatorKind === typescript_1.default.SyntaxKind.InstanceOfKeyword) {
-        const symbol = (0, types_1.getFirstDefinedSymbol)(state, state.getType(node.right));
-        if ((0, isSymbolFromRobloxTypes_1.isSymbolFromRobloxTypes)(state, symbol)) {
+        if ((0, types_1.isPossiblyType)(state.getType(node.right), (0, types_1.isRobloxType)(state))) {
             DiagnosticService_1.DiagnosticService.addDiagnostic(diagnostics_1.errors.noRobloxSymbolInstanceof(node.right));
         }
         return luau_ast_1.default.call(state.TS(node, "instanceof"), [left, right]);

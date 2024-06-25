@@ -28,14 +28,16 @@ function transformMethodDeclaration(state, node, ptr) {
     let { statements, parameters, hasDotDotDot } = (0, transformParameters_1.transformParameters)(state, node);
     luau_ast_1.default.list.pushList(statements, (0, transformStatementList_1.transformStatementList)(state, node.body, node.body.statements));
     let name = (0, transformPropertyName_1.transformPropertyName)(state, node.name);
-    if (typescript_1.default.hasDecorators(node) && !luau_ast_1.default.isSimple(name)) {
-        const tempId = luau_ast_1.default.tempId("key");
-        luau_ast_1.default.list.push(result, luau_ast_1.default.create(luau_ast_1.default.SyntaxKind.VariableDeclaration, {
-            left: tempId,
-            right: name,
-        }));
-        name = tempId;
-        state.setClassElementObjectKey(node, tempId);
+    if (typescript_1.default.hasDecorators(node) || node.parameters.some(parameter => typescript_1.default.hasDecorators(parameter))) {
+        if (!luau_ast_1.default.isSimplePrimitive(name)) {
+            const tempId = luau_ast_1.default.tempId("key");
+            luau_ast_1.default.list.push(result, luau_ast_1.default.create(luau_ast_1.default.SyntaxKind.VariableDeclaration, {
+                left: tempId,
+                right: name,
+            }));
+            name = tempId;
+        }
+        state.setClassElementObjectKey(node, name);
     }
     const isAsync = !!typescript_1.default.getSelectedSyntacticModifierFlags(node, typescript_1.default.ModifierFlags.Async);
     if (node.asteriskToken) {

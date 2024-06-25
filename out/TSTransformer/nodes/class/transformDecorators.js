@@ -7,7 +7,6 @@ exports.transformDecorators = void 0;
 const luau_ast_1 = __importDefault(require("@roblox-ts/luau-ast"));
 const assert_1 = require("../../../Shared/util/assert");
 const transformExpression_1 = require("../expressions/transformExpression");
-const transformPropertyName_1 = require("../transformPropertyName");
 const convertToIndexableExpression_1 = require("../../util/convertToIndexableExpression");
 const typescript_1 = __importDefault(require("typescript"));
 function transformMemberDecorators(state, node, callback) {
@@ -32,11 +31,7 @@ function transformMemberDecorators(state, node, callback) {
         let key;
         if (typescript_1.default.isMethodDeclaration(node) || typescript_1.default.isPropertyDeclaration(node)) {
             key = state.getClassElementObjectKey(node);
-            if (!key) {
-                (0, assert_1.assert)(!typescript_1.default.isBindingPattern(name));
-                const keyPrereqs = state.capturePrereqs(() => (key = (0, transformPropertyName_1.transformPropertyName)(state, name)));
-                luau_ast_1.default.list.pushList(result, keyPrereqs);
-            }
+            (0, assert_1.assert)(key);
         }
         luau_ast_1.default.list.unshiftList(finalizers, callback((0, convertToIndexableExpression_1.convertToIndexableExpression)(expression), key));
     }
@@ -89,14 +84,16 @@ function transformPropertyDecorators(state, member, classId) {
 }
 function transformParameterDecorators(state, member, classId) {
     const result = luau_ast_1.default.list.make();
+    const memberName = member.name;
+    const key = memberName !== undefined ? state.getClassElementObjectKey(member) : luau_ast_1.default.nil();
     for (let i = 0; i < member.parameters.length; i++) {
         const parameter = member.parameters[i];
-        const name = parameter.name;
-        if (typescript_1.default.isIdentifier(name)) {
-            luau_ast_1.default.list.pushList(result, transformMemberDecorators(state, parameter, expression => luau_ast_1.default.list.make(luau_ast_1.default.create(luau_ast_1.default.SyntaxKind.CallStatement, {
-                expression: luau_ast_1.default.call(expression, [classId, luau_ast_1.default.string(name.text), luau_ast_1.default.number(i)]),
-            }))));
-        }
+        luau_ast_1.default.list.pushList(result, transformMemberDecorators(state, parameter, expression => {
+            (0, assert_1.assert)(key, `Missing key for parameter decorator at index ${i}`);
+            return luau_ast_1.default.list.make(luau_ast_1.default.create(luau_ast_1.default.SyntaxKind.CallStatement, {
+                expression: luau_ast_1.default.call(expression, [classId, key, luau_ast_1.default.number(i)]),
+            }));
+        }));
     }
     return result;
 }

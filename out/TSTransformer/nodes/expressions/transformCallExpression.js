@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.transformCallExpression = exports.transformElementCallExpressionInner = exports.transformPropertyCallExpressionInner = exports.transformCallExpressionInner = void 0;
 const luau_ast_1 = __importDefault(require("@roblox-ts/luau-ast"));
 const diagnostics_1 = require("../../../Shared/diagnostics");
+const assert_1 = require("../../../Shared/util/assert");
 const DiagnosticService_1 = require("../../classes/DiagnosticService");
 const transformExpression_1 = require("./transformExpression");
 const transformImportExpression_1 = require("./transformImportExpression");
@@ -15,7 +16,6 @@ const convertToIndexableExpression_1 = require("../../util/convertToIndexableExp
 const ensureTransformOrder_1 = require("../../util/ensureTransformOrder");
 const expressionMightMutate_1 = require("../../util/expressionMightMutate");
 const isMethod_1 = require("../../util/isMethod");
-const isSymbolFromRobloxTypes_1 = require("../../util/isSymbolFromRobloxTypes");
 const types_1 = require("../../util/types");
 const validateNotAny_1 = require("../../util/validateNotAny");
 const valueToIdStr_1 = require("../../util/valueToIdStr");
@@ -33,10 +33,12 @@ function runCallMacro(macro, state, node, expression, nodeArguments) {
                 DiagnosticService_1.DiagnosticService.addDiagnostic(diagnostics_1.errors.noVarArgsMacroSpread(lastArg));
                 return;
             }
-            const minArgumentCount = signature.minArgumentCount;
+            const tupleArgType = state.getType(lastArg.expression);
+            (0, assert_1.assert)(state.typeChecker.isTupleType(tupleArgType));
+            const argumentCount = tupleArgType.target.elementFlags.length;
             const spread = args.pop();
             const tempIds = luau_ast_1.default.list.make();
-            for (let i = args.length; i < minArgumentCount; i++) {
+            for (let i = args.length; i < argumentCount; i++) {
                 const tempId = luau_ast_1.default.tempId(`spread${i}`);
                 args.push(tempId);
                 luau_ast_1.default.list.push(tempIds, tempId);
@@ -62,8 +64,8 @@ function runCallMacro(macro, state, node, expression, nodeArguments) {
     state.prereqList(prereqs);
     return (0, wrapReturnIfLuaTuple_1.wrapReturnIfLuaTuple)(state, node, macro(state, node, expression, args));
 }
-function fixVoidArgumentsForRobloxFunctions(state, symbol, args, nodeArguments) {
-    if ((0, isSymbolFromRobloxTypes_1.isSymbolFromRobloxTypes)(state, symbol)) {
+function fixVoidArgumentsForRobloxFunctions(state, type, args, nodeArguments) {
+    if ((0, types_1.isPossiblyType)(type, (0, types_1.isRobloxType)(state))) {
         for (let i = 0; i < args.length; i++) {
             const arg = args[i];
             const nodeArg = nodeArguments[i];
@@ -95,7 +97,7 @@ function transformCallExpressionInner(state, node, expression, nodeArguments) {
         }
     }
     const [args, prereqs] = state.capture(() => (0, ensureTransformOrder_1.ensureTransformOrder)(state, nodeArguments));
-    fixVoidArgumentsForRobloxFunctions(state, symbol, args, nodeArguments);
+    fixVoidArgumentsForRobloxFunctions(state, expType, args, nodeArguments);
     if (!luau_ast_1.default.list.isEmpty(prereqs) && (0, expressionMightMutate_1.expressionMightMutate)(state, expression, node.expression)) {
         expression = state.pushToVar(expression, "fn");
     }
@@ -122,7 +124,7 @@ function transformPropertyCallExpressionInner(state, node, expression, baseExpre
         }
     }
     const [args, prereqs] = state.capture(() => (0, ensureTransformOrder_1.ensureTransformOrder)(state, nodeArguments));
-    fixVoidArgumentsForRobloxFunctions(state, symbol, args, nodeArguments);
+    fixVoidArgumentsForRobloxFunctions(state, expType, args, nodeArguments);
     if (!luau_ast_1.default.list.isEmpty(prereqs) && (0, expressionMightMutate_1.expressionMightMutate)(state, baseExpression, expression.expression)) {
         baseExpression = state.pushToVar(baseExpression);
     }
@@ -167,7 +169,7 @@ function transformElementCallExpressionInner(state, node, expression, baseExpres
         }
     }
     const [[argumentExp, ...args], prereqs] = state.capture(() => (0, ensureTransformOrder_1.ensureTransformOrder)(state, [argumentExpression, ...nodeArguments]));
-    fixVoidArgumentsForRobloxFunctions(state, symbol, args, nodeArguments);
+    fixVoidArgumentsForRobloxFunctions(state, expType, args, nodeArguments);
     if (!luau_ast_1.default.list.isEmpty(prereqs) && (0, expressionMightMutate_1.expressionMightMutate)(state, baseExpression, expression.expression)) {
         baseExpression = state.pushToVar(baseExpression);
     }

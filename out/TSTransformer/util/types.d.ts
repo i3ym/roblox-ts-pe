@@ -23,6 +23,7 @@ export declare function isIterableType(state: TransformState): TypeCheck;
 export declare function isObjectType(type: ts.Type): boolean;
 export declare function isUndefinedType(type: ts.Type): boolean;
 export declare function isEmptyStringType(type: ts.Type): boolean;
+export declare function isRobloxType(state: TransformState): TypeCheck;
 export declare function walkTypes(type: ts.Type, callback: (type: ts.Type) => void): void;
 export declare function getFirstConstructSymbol(state: TransformState, expression: ts.Expression): ts.Symbol | undefined;
 export declare function getFirstDefinedSymbol(state: TransformState, type: ts.Type): ts.Symbol | undefined;

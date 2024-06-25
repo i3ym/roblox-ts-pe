@@ -3,7 +3,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getTypeArguments = exports.getFirstDefinedSymbol = exports.getFirstConstructSymbol = exports.walkTypes = exports.isEmptyStringType = exports.isUndefinedType = exports.isObjectType = exports.isIterableType = exports.isIterableFunctionLuaTupleType = exports.isLuaTupleType = exports.isIterableFunctionType = exports.isGeneratorType = exports.isMapType = exports.isSetType = exports.isArrayType = exports.isStringType = exports.isNaNType = exports.isNumberLiteralType = exports.isNumberType = exports.isBooleanLiteralType = exports.isBooleanType = exports.isAnyType = exports.isDefinedType = exports.isPossiblyType = exports.isDefinitelyType = void 0;
+exports.getTypeArguments = exports.getFirstDefinedSymbol = exports.getFirstConstructSymbol = exports.walkTypes = exports.isRobloxType = exports.isEmptyStringType = exports.isUndefinedType = exports.isObjectType = exports.isIterableType = exports.isIterableFunctionLuaTupleType = exports.isLuaTupleType = exports.isIterableFunctionType = exports.isGeneratorType = exports.isMapType = exports.isSetType = exports.isArrayType = exports.isStringType = exports.isNaNType = exports.isNumberLiteralType = exports.isNumberType = exports.isBooleanLiteralType = exports.isBooleanType = exports.isAnyType = exports.isDefinedType = exports.isPossiblyType = exports.isDefinitelyType = void 0;
+const path_1 = __importDefault(require("path"));
+const constants_1 = require("../../Shared/constants");
+const isPathDescendantOf_1 = require("../../Shared/util/isPathDescendantOf");
 const TSTransformer_1 = require("..");
 const MacroManager_1 = require("../classes/MacroManager");
 const typeGuards_1 = require("../typeGuards");
@@ -185,6 +188,18 @@ function isEmptyStringType(type) {
     return isStringType(type);
 }
 exports.isEmptyStringType = isEmptyStringType;
+function isRobloxType(state) {
+    const typesPath = path_1.default.join(state.data.nodeModulesPath, constants_1.RBXTS_SCOPE, "types");
+    return type => {
+        var _a, _b, _c;
+        return (_c = (_b = (_a = type.symbol) === null || _a === void 0 ? void 0 : _a.declarations) === null || _b === void 0 ? void 0 : _b.some(d => {
+            var _a;
+            const filePath = (_a = d.getSourceFile()) === null || _a === void 0 ? void 0 : _a.fileName;
+            return filePath !== undefined && (0, isPathDescendantOf_1.isPathDescendantOf)(filePath, typesPath);
+        })) !== null && _c !== void 0 ? _c : false;
+    };
+}
+exports.isRobloxType = isRobloxType;
 function walkTypes(type, callback) {
     if (type.isUnionOrIntersection()) {
         for (const t of type.types) {

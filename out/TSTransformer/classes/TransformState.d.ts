@@ -71,6 +71,6 @@ export declare class TransformState {
     guessVirtualPath(fsPath: string): string;
     symbolToIdMap: Map<ts.Symbol, luau.TemporaryIdentifier>;
     private classElementToObjectKeyMap;
-    setClassElementObjectKey(classElement: ts.ClassElement, identifier: luau.AnyIdentifier): void;
-    getClassElementObjectKey(classElement: ts.ClassElement): luau.AnyIdentifier | undefined;
+    setClassElementObjectKey(classElement: ts.ClassElement, identifier: luau.SimpleTypes): void;
+    getClassElementObjectKey(classElement: ts.ClassElement): luau.SimpleTypes | undefined;
 }

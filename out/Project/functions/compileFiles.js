@@ -40,7 +40,7 @@ function inferProjectType(data, rojoResolver) {
 }
 function emitResultFailure(messageText) {
     return {
-        emitSkipped: false,
+        emitSkipped: true,
         diagnostics: [(0, createTextDiagnostic_1.createTextDiagnostic)(messageText)],
     };
 }
