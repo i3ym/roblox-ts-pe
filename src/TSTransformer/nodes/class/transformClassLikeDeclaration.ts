@@ -91,7 +91,9 @@ function createBoilerplate(
 		const identifierByType = (type: ts.Type) => {
 			if (!type?.symbol?.valueDeclaration) return;
 
-			const pth = path.relative("src", type.symbol.valueDeclaration.getSourceFile().fileName);
+			const pth = path
+				.relative("src", type.symbol.valueDeclaration.getSourceFile().fileName)
+				.replaceAll("\\", "/");
 			return pth + "$" + type.symbol.name;
 		};
 

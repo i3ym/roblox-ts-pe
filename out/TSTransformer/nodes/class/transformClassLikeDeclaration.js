@@ -55,7 +55,9 @@ function createBoilerplate(state, node, className, isClassExpression) {
             var _a;
             if (!((_a = type === null || type === void 0 ? void 0 : type.symbol) === null || _a === void 0 ? void 0 : _a.valueDeclaration))
                 return;
-            const pth = path_1.default.relative("src", type.symbol.valueDeclaration.getSourceFile().fileName);
+            const pth = path_1.default
+                .relative("src", type.symbol.valueDeclaration.getSourceFile().fileName)
+                .replaceAll("\\", "/");
             return pth + "$" + type.symbol.name;
         };
         const smb = node.symbol && state.typeChecker.getTypeOfSymbolAtLocation(node.symbol, node);
